@@ -1,7 +1,7 @@
 {
   "properties": {
     "displayName": "Enable logging by category group for Firewall (microsoft.network/azurefirewalls) to Log Analytics",
-    "description": "Resource logs should be enabled to track activities and events that take place on your resources and give you visibility and insights into any changes that occur. This policy deploys a diagnostic setting using a category group to route logs to a Log Analytics workspace for Firewall (microsoft.network/azurefirewalls).",
+    "description": "Resource logs should be enabled to track activities and events that take place on your resources and give you visibility and insights into any changes that occur. This policy deploys a diagnostic setting using a category group to route logs to a destination type in a Log Analytics workspace for Firewall (microsoft.network/azurefirewalls).",
     "mode": "Indexed",
     "policyType": "BuiltIn",
     "version": "1.0.0",
@@ -49,6 +49,18 @@
           "strongType": "omsWorkspace",
           "assignPermissions": true
         }
+      },
+      "destinationType": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Destination Type",
+          "description": "Destination Type to indicate whether the export to Log Analytics is using AzureDiagnostics (null) or Resource Specific (Dedicated) destination table"
+        },
+        "allowedValues": [
+          "null",
+          "Dedicated"
+        ],
+        "defaultValue": "null"
       }
     },
     "policyRule": {
@@ -120,6 +132,9 @@
                   },
                   "resourceName": {
                     "type": "string"
+                  },
+                  "destinationType": {
+                    "type": "string"
                   }
                 },
                 "variables": {},
@@ -129,6 +144,7 @@
                     "apiVersion": "2021-05-01-preview",
                     "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticSettingName'))]",
                     "properties": {
+                      "logAnalyticsDestinationType": "[parameters('destinationType')]",
                       "workspaceId": "[parameters('logAnalytics')]",
                       "logs": [
                         {
@@ -143,7 +159,7 @@
                 "outputs": {
                   "policy": {
                     "type": "string",
-                    "value": "[concat('Diagnostic setting ', parameters('diagnosticSettingName'), ' for type Firewall (microsoft.network/azurefirewalls), resourceName ', parameters('resourceName'), ' to Log Analytics ', parameters('logAnalytics'), ' configured')]"
+                    "value": "[concat('Diagnostic setting ', parameters('diagnosticSettingName'), ' for type Firewall (microsoft.network/azurefirewalls), resourceName ', parameters('resourceName'), ' to Log Analytics ', parameters('logAnalytics'), ' with destination type', parameters('destinationType'), ' configured')]"
                   }
                 }
               },
@@ -156,6 +172,9 @@
                 },
                 "resourceName": {
                   "value": "[field('name')]"
+                },
+                "destinationType": {
+                  "value": "[parameters('destinationType')]"
                 }
               }
             }
